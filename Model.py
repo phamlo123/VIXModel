@@ -1,39 +1,35 @@
 import pandas as pd
-
 import numpy as np
-dataset = pd.read_csv('/Users/terencepham/Downloads/petrol_consumption.csv')
-dataset.head()
 
-X = dataset.iloc[:, 0:4].values
-y = dataset.iloc[:, 4].values
-
-from sklearn.model_selection import train_test_split
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+strikeDelta = 5
 
 
-from sklearn.preprocessing import StandardScaler
+class ProcessingAndFeaturing:
 
-sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-X_test = sc.transform(X_test)
+    def __init__ (self, forecastHorizon, numStrikesSelected, timeStamp: list, listOfOptions: list):
+        self.forecastHorizon = forecastHorizon
+        self.numStrikeSelected = numStrikesSelected
+        self.timeStamp = timeStamp
+        self.listOfOptions = listOfOptions
+        self.listOfOptionsPrice = {}
 
-from sklearn.preprocessing import StandardScaler
+    def strikeSelection (self, ATMStrike: list) -> list:
+        selectedStrike = []
+        for i in range (len (self.timeStamp)):
+            selectedStrikeCall = []
+            selectedStrikePut = []
+            for i in range (self.numStrikeSelected):
+                selectedStrikeCall.append (ATMStrike[i] + strikeDelta)
+                selectedStrikePut.append (ATMStrike[i] - strikeDelta)
 
-sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-X_test = sc.transform(X_test)
+            selectedStrike.append (selectedStrikePut)
+            selectedStrike.append (selectedStrikeCall)
+
+        selectedStrike.append (ATMStrike)
+        return selectedStrike
+
+    def featureEngineering (self, ATMStrike: list):
+        selectedStrike = self.strikeSelection (ATMStrike)
+        for i in range(len (self.timeStamp)):
 
 
-from sklearn.ensemble import RandomForestRegressor
-
-regressor = RandomForestRegressor(n_estimators=10000, random_state=0)
-regressor.fit(X_train, y_train)
-y_pred = regressor.predict(X_test)
-
-
-from sklearn import metrics
-
-print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))
-print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
-print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
