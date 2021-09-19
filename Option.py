@@ -1,12 +1,22 @@
-import datetime
+from datetime import timedelta
 
 
 class Option:
-    def __init__ (self, date: datetime, strike, expDate: datetime, quote):
+    def __init__ (self, date: timedelta.days, strike, exp_date: timedelta, quote, term_interest_rate):
         self.date = date
         self.strike = strike
-        self.expDate = expDate
+        self.exp_date = exp_date
         self.quote = quote
+        self.term_interest_rate = term_interest_rate
 
-    def has30dayTenor (self):
-        return self.expDate - self.date == 30
+    def has_30_day_tenor (self):
+        return self.exp_date - self.date == 30
+
+    def get_time_to_maturity(self):
+        return self.exp_date - self.date
+
+
+
+
+
+
