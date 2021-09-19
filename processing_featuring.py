@@ -3,15 +3,35 @@ import numpy as np
 from typing import List
 import Date
 import util
+from hash import hashtable
 
 strikeDelta = 5
 forecast_horizon = 30
+
+
+def calculate_price_features_helper (t_near: Date, list_options_near, t_far: Date, list_options_far) -> list:
+    list_price_near = []
+    list_price_far = []
+    for option1 in list_options_near:
+        list_price_near.append (option1.quote)
+    for option2 in list_options_far:
+        list_price_far.append (option2.quote)
+
+    list_interpolated_feature_price = []
+    for i in range (len (list_price_near)):
+        term_1 = (t_far.Date.date - 30) / (t_far.Date.date - t_near.Date.date) * list_price_near[i]
+        term_2 = (30 - t_near.Date.date) / (t_far.Date.date - t_near.Date.date) * list_price_far[i]
+
+        price = term_1 + term_2
+        list_interpolated_feature_price.append (price)
+    return list_interpolated_feature_price
 
 
 class ProcessingAndFeaturing:
 
     def __init__ (self, num_strikes_selected, list_of_dates: List[Date], list_of_options: list,
                   list_of_strike_range: List[dict]):
+        self.price_features = dict
         self.forecast_horizon = forecast_horizon
         self.num_strikes_selected = num_strikes_selected
         self.list_of_dates = list_of_dates
@@ -41,27 +61,38 @@ class ProcessingAndFeaturing:
             option_day_list = []
             if each_day.Date.has_options_maturing_in_30_days ():
                 i = each_day.Date.time_stamp
-                for option in Date.get_options_in_strike_range (selected_strike[i],
-                                                                each_day.Date.get_options_maturing_in_30 ()):
+                list_price_features_t = []
+                for option_t in Date.get_options_in_strike_range (selected_strike[i],
+                                                                  each_day.Date.get_options_maturing_in_30 ()):
                     # assuming all options have quotes for now, will come back to add strike interpolation for options that
                     # dont have a price
-                    option_day_list.append (option)
-                vix_t = util.vix_calculation (option_day_list)
+                    option_day_list.append (option_t)
+                    list_price_features_t.append (option_t.quote)
+                vix_t = util.vix_calculation_not_30days (option_day_list)
                 self.list_of_synthetic_vix.append (vix_t)
+                self.price_features.update (each_day, list_price_features_t)
+
             else:
                 lower_date = self.findLowerTermFromGivenDate (each_day)
                 higher_date = self.findHigherTermFromGivenDate (each_day)
-                for t in {lower_date, higher_date}:
-                    # assuming all options have quotes for now, will come back to add strike interpolation for options that
-                    # dont have a price
+                lower_date_time_stamp = lower_date.Date.time_stamp
+                higher_date_time_stamp = higher_date.Date.time_stamp
+                # assuming all options have quotes for now, will come back to add strike interpolation for options that
+                # dont have a price
+                list_options_near = Date.get_options_in_strike_range (selected_strike[lower_date_time_stamp],
+                                                                      lower_date.Date.get_options_maturing_in_30 ())
+                list_options_far = Date.get_options_in_strike_range (selected_strike[higher_date_time_stamp],
+                                                                     higher_date.Date.get_options_maturing_in_30 ())
 
+                vix_interpolated = util.vix_calculation_not_30days (list_options_near, lower_date, list_options_far,
+                                                                    higher_date)
 
+                self.list_of_synthetic_vix.append (vix_interpolated)
+                self.price_features.update (each_day,
+                                            calculate_price_features_helper (lower_date, list_options_near, higher_date,
+                                                                             list_options_far))
 
-
-
-
-
-    def findLowerTermFromGivenDate (self, date: Date):
+    def findLowerTermFromGivenDate (self, date: Date) -> Date:
         index = self.list_of_dates.index (date) - 1
         try:
             while True:
@@ -71,7 +102,7 @@ class ProcessingAndFeaturing:
         except IndexError:
             return None
 
-    def findHigherTermFromGivenDate (self, date: Date):
+    def findHigherTermFromGivenDate (self, date: Date) -> Date:
         index = self.list_of_dates.index (date) - 1
         try:
             while True:
