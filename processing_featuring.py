@@ -3,7 +3,6 @@ import numpy as np
 from typing import List
 import Date
 import util
-from hash import hashtable
 
 strikeDelta = 5
 forecast_horizon = 30
