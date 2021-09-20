@@ -29,6 +29,7 @@ def vix_calculation_30days (list_of_option, date: Date):
     return vix
 
 
+# From the CBOE booklet
 def variance_calculation (list_of_option, date: Date):
     first_term = 0
     k_delta = processing_featuring.strikeDelta
@@ -47,6 +48,7 @@ def variance_calculation (list_of_option, date: Date):
     return variance
 
 
+# Equation 2 and 3
 def vix_calculation_not_30days (list_near_options, date1: Date, list_far_options, date2: Date):
     variance1 = variance_calculation (list_near_options, date1)
     variance2 = variance_calculation (list_far_options, date2)

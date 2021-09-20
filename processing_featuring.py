@@ -8,6 +8,7 @@ strikeDelta = 5
 forecast_horizon = 30
 
 
+# Equation 5
 def calculate_price_features_helper (t_near: Date, list_options_near, t_far: Date, list_options_far) -> list:
     list_price_near = []
     list_price_far = []
@@ -26,11 +27,27 @@ def calculate_price_features_helper (t_near: Date, list_options_near, t_far: Dat
     return list_interpolated_feature_price
 
 
+# Equation 7
+def make_stationary (date: Date, list_of_price_features):
+    K = date.nearest_strike_below_index
+    list_of_price_features_bar = []
+    for item in list_of_price_features:
+        price_feature_bar = item / (K ** 2)
+        list_of_price_features_bar.append (price_feature_bar)
+    return list_of_price_features_bar
+
+
+# Before feeding into the model, all features are normalized by subtracting from the sample mean and divide them by
+# the standard deviation
+def machine_learning_normalization ():
+    return 0
+
+
 class ProcessingAndFeaturing:
 
     def __init__ (self, num_strikes_selected, list_of_dates: List[Date], list_of_options: list,
                   list_of_strike_range: List[dict]):
-        self.price_features = dict
+        self.price_features = None
         self.forecast_horizon = forecast_horizon
         self.num_strikes_selected = num_strikes_selected
         self.list_of_dates = list_of_dates
@@ -67,9 +84,10 @@ class ProcessingAndFeaturing:
                     # dont have a price
                     option_day_list.append (option_t)
                     list_price_features_t.append (option_t.quote)
-                vix_t = util.vix_calculation_not_30days (option_day_list)
+                vix_t = util.vix_calculation_30days (option_day_list, each_day)
                 self.list_of_synthetic_vix.append (vix_t)
-                self.price_features.update (each_day, list_price_features_t)
+                list_price_features_t_bar = make_stationary (each_day, list_price_features_t)
+                self.price_features.dict.update (each_day, list_price_features_t_bar)
 
             else:
                 lower_date = self.findLowerTermFromGivenDate (each_day)
@@ -87,9 +105,12 @@ class ProcessingAndFeaturing:
                                                                     higher_date)
 
                 self.list_of_synthetic_vix.append (vix_interpolated)
-                self.price_features.update (each_day,
-                                            calculate_price_features_helper (lower_date, list_options_near, higher_date,
-                                                                             list_options_far))
+                list_price_features_t = calculate_price_features_helper (lower_date, list_options_near,
+                                                                         higher_date,
+                                                                         list_options_far)
+                list_price_features_t_bar = make_stationary (each_day, list_price_features_t)
+
+                self.price_features.dict.update (each_day, list_price_features_t_bar)
 
     def findLowerTermFromGivenDate (self, date: Date) -> Date:
         index = self.list_of_dates.index (date) - 1

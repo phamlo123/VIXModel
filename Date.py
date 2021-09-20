@@ -18,9 +18,11 @@ def get_options_in_strike_range (strike_range: dict, list_options):
 # our analysis; a list of options posted on that day; and a date in datetime format for referencing purposes
 
 class Date:
-    def __init__ (self, date: datetime, time_stamp, list_of_options, index_spot_price, index_forward_price,
+    def __init__ (self, timeInDaysFrom0: int, date: datetime, time_stamp, list_of_options, index_spot_price,
+                  index_forward_price,
                   interest_rate,
                   nearest_strike_below_index):
+        self.timeInDaysFrom0 = timeInDaysFrom0
         self.date = date
         self.time_stamp = time_stamp
         self.list_of_options = list_of_options
@@ -32,7 +34,7 @@ class Date:
     # this method returns whether or not there is an option contract maturing 30 days from this day.
     def has_options_maturing_in_30_days (self) -> bool:
         for option in self.list_of_options:
-            if option.exp_date == self.time_stamp + 30:
+            if option.exp_date == self.date + 30:
                 return True
             else:
                 continue
@@ -42,7 +44,7 @@ class Date:
     def get_options_maturing_in_30 (self) -> List[Option]:
         result = []
         for option in self.list_of_options:
-            if option.exp_date == self.time_stamp + 30:
+            if option.exp_date == self.date + 30:
                 result.append (option)
 
         return result
