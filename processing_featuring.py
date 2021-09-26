@@ -15,7 +15,7 @@ class ProcessingAndFeaturing:
     def feature_engineering (self):
         for each_day in self.list_of_dates:
             option_day_list = []
-            if each_day.Date.has_options_maturing_in_30_days ():
+            if each_day.has_options_maturing_in_30_days ():
                 list_price_features_t = []
                 for option_t in myDate.get_options_in_strike_range (each_day.Date.selectStrike (),
                                                                     each_day.Date.get_options_maturing_in_30 ()):
@@ -31,14 +31,14 @@ class ProcessingAndFeaturing:
             else:
                 lower_date = self.findLowerTermFromGivenDate (each_day)
                 higher_date = self.findHigherTermFromGivenDate (each_day)
-                lower_date_time_stamp = lower_date.Date.time_stamp
-                higher_date_time_stamp = higher_date.Date.time_stamp
+                if(not isinstance(lower_date, myDate.Date) or not isinstance(higher_date, myDate.Date)):
+                    continue
                 # assuming all options have quotes for now, will come back to add strike interpolation for options that
                 # dont have a price
-                list_options_near = myDate.get_options_in_strike_range (lower_date.Date.selectStrike (),
-                                                                        lower_date.Date.get_options_maturing_in_30 ())
-                list_options_far = myDate.get_options_in_strike_range (higher_date.Date.selectStrike (),
-                                                                       higher_date.Date.get_options_maturing_in_30 ())
+                list_options_near = myDate.get_options_in_strike_range (lower_date.selectStrike (),
+                                                                        lower_date.get_options_maturing_in_30 ())
+                list_options_far = myDate.get_options_in_strike_range (higher_date.selectStrike (),
+                                                                       higher_date.get_options_maturing_in_30 ())
 
                 vix_interpolated = util.vix_calculation_not_30days (list_options_near, lower_date, list_options_far,
                                                                     higher_date)
@@ -56,21 +56,21 @@ class ProcessingAndFeaturing:
         index = self.list_of_dates.index (date) - 1
         try:
             while True:
-                if self.list_of_dates[index].Date.has_options_maturing_in_30_days ():
+                if self.list_of_dates[index].has_options_maturing_in_30_days ():
                     return self.list_of_dates[index]
                 index = index - 1
         except IndexError:
-            return None
+            print("no lower date has desired maturity for date {t}".format(t=date.date))
 
     def findHigherTermFromGivenDate (self, date: myDate) -> myDate:
         index = self.list_of_dates.index (date) - 1
         try:
             while True:
-                if self.list_of_dates[index].Date.has_options_maturing_in_30_days ():
+                if self.list_of_dates[index].has_options_maturing_in_30_days ():
                     return self.list_of_dates[index]
                 index = index + 1
         except IndexError:
-            return None
+            print("no higher date has desired maturity for date {t}".format(t=date.date))
 
 
 # Equation 5
@@ -84,8 +84,8 @@ def calculate_price_features_helper (t_near: myDate, list_options_near, t_far: m
 
     list_interpolated_feature_price = []
     for i in range (len (list_price_near)):
-        term_1 = (t_far.Date.date - 30) / (t_far.Date.date - t_near.Date.date) * list_price_near[i]
-        term_2 = (30 - t_near.Date.date) / (t_far.Date.date - t_near.Date.date) * list_price_far[i]
+        term_1 = (t_far.date - 30) / (t_far.date - t_near.date) * list_price_near[i]
+        term_2 = (30 - t_near.date) / (t_far.date - t_near.date) * list_price_far[i]
 
         price = term_1 + term_2
         list_interpolated_feature_price.append (price)

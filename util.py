@@ -63,11 +63,17 @@ def vix_calculation_not_30days (list_near_options, date1: myDate, list_far_optio
     return vix
 
 
-def addToDatabase(connection, my_map):
-    for item in my_map.keys():
-        connection.updateVarianceTable(item.date, my_map.get(item))
+def addToDatabase (connection, my_map):
+    try:
+        for item in my_map.keys ():
+            connection.updateVarianceTable (item.date, my_map.get (item))
+    except TypeError:
+        print ('Map of dates and corresponding lists of price features is empty')
 
-def addToDatabase2(connection, my_map):
-    for item in my_map.keys():
-        connection.updateMainTable(item.Option.id, my_map.get(item))
 
+def addToDatabase2 (connection, my_map):
+    try:
+        for item in my_map.keys ():
+            connection.updateMainTable (item.Option.id, my_map.get (item))
+    except TypeError:
+        print ('Map of date and corresponding synthetic vix is empty')

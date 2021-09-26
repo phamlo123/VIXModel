@@ -20,7 +20,7 @@ def get_options_in_strike_range (strike_range: dict, list_options):
 # our analysis; a list of options posted on that day; and a date in datetime format for referencing purposes
 
 class Date:
-    def __init__ (self, date : int, list_of_options: list, index_spot_price: float,
+    def __init__ (self, date: int, list_of_options: list, index_spot_price: float,
                   index_forward_price: float,
                   interest_rate: float,
                   nearest_strike_below_index: float):
@@ -50,13 +50,10 @@ class Date:
 
         return result
 
-
-
-    def selectStrike(self) -> list:
-        selected_strikes = list()
+    def selectStrike (self) -> list:
+        selected_strikes = list ()
         for i in range (num_strike_selected):
-            selected_strikes.append(self.nearest_strike_below_index + (i+1) * strike_Delta)
-            selected_strikes.append(self.nearest_strike_below_index - (i-1) * strike_Delta)
+            selected_strikes.append (self.nearest_strike_below_index + (i + 1) * strike_Delta)
+            selected_strikes.append (self.nearest_strike_below_index - (i - 1) * strike_Delta)
         self.selectedStrikes = selected_strikes
         return selected_strikes
-
