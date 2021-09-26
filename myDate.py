@@ -1,7 +1,10 @@
 from collections import Set
 from typing import List
-import main
-import Option
+import myOption
+
+num_strike_selected = 40
+strike_Delta = 5
+forecast_horizon = 30
 
 
 def get_options_in_strike_range (strike_range: dict, list_options):
@@ -17,13 +20,11 @@ def get_options_in_strike_range (strike_range: dict, list_options):
 # our analysis; a list of options posted on that day; and a date in datetime format for referencing purposes
 
 class Date:
-    def __init__ (self, timeInDaysFrom0: int, date : int, time_stamp, list_of_options, index_spot_price,
-                  index_forward_price,
-                  interest_rate,
-                  nearest_strike_below_index):
-        self.timeInDaysFrom0 = timeInDaysFrom0
+    def __init__ (self, date : int, list_of_options: list, index_spot_price: float,
+                  index_forward_price: float,
+                  interest_rate: float,
+                  nearest_strike_below_index: float):
         self.date = date
-        self.time_stamp = time_stamp
         self.list_of_options = list_of_options
         self.nearest_strike_below_index = nearest_strike_below_index
         self.interest_rate = interest_rate
@@ -41,7 +42,7 @@ class Date:
         return False
 
     # this method returns a list of Options that will mature exactly 30 days from this day, according to this day records.
-    def get_options_maturing_in_30 (self) -> List[Option]:
+    def get_options_maturing_in_30 (self) -> list:
         result = []
         for option in self.list_of_options:
             if option.exp_date == self.date + 30:
@@ -53,9 +54,9 @@ class Date:
 
     def selectStrike(self) -> list:
         selected_strikes = list()
-        for i in range (main.num_strike_selected):
-            selected_strikes.append(self.nearest_strike_below_index + (i+1) * main.strike_Delta)
-            selected_strikes.append(self.nearest_strike_below_index - (i-1) * main.strike_Delta)
+        for i in range (num_strike_selected):
+            selected_strikes.append(self.nearest_strike_below_index + (i+1) * strike_Delta)
+            selected_strikes.append(self.nearest_strike_below_index - (i-1) * strike_Delta)
         self.selectedStrikes = selected_strikes
         return selected_strikes
 

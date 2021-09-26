@@ -16,27 +16,28 @@ def createPredictedVixTable ():
     df.columns = res.keys ()
 
 
-query = 'SELECT ID, date FROM Main'
-cursor.execute (query)
-
-df = pd.DataFrame (cursor.fetchall (), columns=['ID', 'date'])
-for ind, row in df.iterrows ():
-    print (row.values)
-
-
 def getListOfDates () -> pd.DataFrame:
-    query = 'SELECT date FROM Date'
+    query = 'SELECT * FROM Date'
     cursor.execute (query)
-    df = pd.DataFrame (cursor.fetchall (), columns=['date'])
+    df = pd.DataFrame (cursor.fetchall (), columns=['date', 'forward', 'spot', 'rate', 'nearestStrikeBelowSpot'])
     return df
 
 
 def updateVarianceTable (date: int, synthetic_vix: float):
-    statement = str.format ('INSERT INTO prediction_variance (date, predicted_vix)  VALUES' + ' ({d},' + ' {f})', date,
-                            synthetic_vix)
+    statement = 'INSERT INTO prediction_variance (date, predicted_vix)  VALUES ({date} {vix})'.format (date=date,
+                                                                                                       vix=synthetic_vix)
+    cursor.execute (statement)
+    connection.commit ()
 
-    cursor.execute(statement)
 
-def updateMainTable(optionID: int, price_features: float):
-    statement = str.format('INSERT INTO Main (ID, priceFeatures) VALUES' + ' ({d}' + ' {f})', optionID, price_features)
-    cursor.execute(statement)
+def updateMainTable (optionID: int, price_features: float):
+    statement = 'UPDATE Main SET priceFeatures = {fname} WHERE ID = {id}'.format (fname=price_features, id=optionID)
+    cursor.execute (statement)
+    connection.commit ()
+
+
+def getListOfOptionForDate (date: int):
+    query = 'SELECT ID, date, expiry, days, k, cp, bid, ask FROM Main WHERE date = {mydate}'.format (mydate=date)
+    cursor.execute (query)
+    df = pd.DataFrame(cursor.fetchall(), columns=['ID', 'date', 'expiry', 'days', 'k', 'cp', 'bid', 'ask'])
+    return df
