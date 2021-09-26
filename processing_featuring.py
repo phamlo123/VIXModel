@@ -112,6 +112,8 @@ class ProcessingAndFeaturing:
 
                 self.price_features.dict.update (each_day, list_price_features_t_bar)
 
+
+
     def findLowerTermFromGivenDate (self, date: Date) -> Date:
         index = self.list_of_dates.index (date) - 1
         try:
@@ -131,3 +133,5 @@ class ProcessingAndFeaturing:
                 index = index + 1
         except IndexError:
             return None
+
+

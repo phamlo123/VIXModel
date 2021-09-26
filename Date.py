@@ -1,6 +1,5 @@
 from collections import Set
 from typing import List
-import datetime
 
 import Option
 
@@ -18,7 +17,7 @@ def get_options_in_strike_range (strike_range: dict, list_options):
 # our analysis; a list of options posted on that day; and a date in datetime format for referencing purposes
 
 class Date:
-    def __init__ (self, timeInDaysFrom0: int, date: datetime, time_stamp, list_of_options, index_spot_price,
+    def __init__ (self, timeInDaysFrom0: int, date : int, time_stamp, list_of_options, index_spot_price,
                   index_forward_price,
                   interest_rate,
                   nearest_strike_below_index):

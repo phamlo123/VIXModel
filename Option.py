@@ -1,8 +1,7 @@
-from datetime import timedelta
 
 
 class Option:
-    def __init__ (self, date: timedelta.days, strike, exp_date: timedelta, bid, ask, term_interest_rate):
+    def __init__ (self, date , strike, exp_date , bid, ask, term_interest_rate):
         self.date = date
         self.strike = strike
         self.exp_date = exp_date
