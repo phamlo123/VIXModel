@@ -1,7 +1,8 @@
 
 
 class Option:
-    def __init__ (self, date , strike, exp_date , bid, ask, term_interest_rate):
+    def __init__ (self, id,  date , strike, exp_date , bid, ask, term_interest_rate):
+        self.id = id
         self.date = date
         self.strike = strike
         self.exp_date = exp_date

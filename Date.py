@@ -1,6 +1,6 @@
 from collections import Set
 from typing import List
-
+import main
 import Option
 
 
@@ -29,6 +29,7 @@ class Date:
         self.interest_rate = interest_rate
         self.index_forward_price = index_forward_price
         self.index_spot_price = index_spot_price
+        self.selectedStrikes = list
 
     # this method returns whether or not there is an option contract maturing 30 days from this day.
     def has_options_maturing_in_30_days (self) -> bool:
@@ -47,3 +48,14 @@ class Date:
                 result.append (option)
 
         return result
+
+
+
+    def selectStrike(self) -> list:
+        selected_strikes = list()
+        for i in range (main.num_strike_selected):
+            selected_strikes.append(self.nearest_strike_below_index + (i+1) * main.strike_Delta)
+            selected_strikes.append(self.nearest_strike_below_index - (i-1) * main.strike_Delta)
+        self.selectedStrikes = selected_strikes
+        return selected_strikes
+

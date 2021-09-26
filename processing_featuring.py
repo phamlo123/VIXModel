@@ -3,6 +3,7 @@ import numpy as np
 from typing import List
 import Date
 import util
+import collections
 
 strikeDelta = 5
 forecast_horizon = 30
@@ -45,49 +46,29 @@ def machine_learning_normalization ():
 
 class ProcessingAndFeaturing:
 
-    def __init__ (self, num_strikes_selected, list_of_dates: List[Date], list_of_options: list,
-                  list_of_strike_range: List[dict]):
-        self.price_features = None
+    def __init__ (self, num_strikes_selected, list_of_dates: List[Date]):
+        self.price_features = dict
         self.forecast_horizon = forecast_horizon
         self.num_strikes_selected = num_strikes_selected
         self.list_of_dates = list_of_dates
-        self.list_of_strike_range = list_of_strike_range
-        self.list_of_options = list_of_options
-        self.list_of_options_price = []
-        self.list_of_synthetic_vix = []
+        self.map_of_synthetic_vix = dict
 
-    def strike_selection (self, atm_strike: list) -> list:
-        selected_strikes = []
-        for i in range (len (self.list_of_dates)):
-            selected_strike_call = []
-            selected_strike_put = []
-            for i in range (self.num_strikes_selected):
-                selected_strike_call.append (atm_strike[i] + strikeDelta)
-                selected_strike_put.append (atm_strike[i] - strikeDelta)
 
-            selected_strikes.append (selected_strike_put)
-            selected_strikes.append (selected_strike_call)
-
-        selected_strikes.append (atm_strike)
-        return selected_strikes
-
-    def feature_engineering (self, atm_strikes_list: List[int]):
-        selected_strike = self.strike_selection (atm_strikes_list)
+    def feature_engineering (self):
         for each_day in self.list_of_dates:
             option_day_list = []
             if each_day.Date.has_options_maturing_in_30_days ():
-                i = each_day.Date.time_stamp
                 list_price_features_t = []
-                for option_t in Date.get_options_in_strike_range (selected_strike[i],
+                for option_t in Date.get_options_in_strike_range (each_day.Date.selectStrike(),
                                                                   each_day.Date.get_options_maturing_in_30 ()):
                     # assuming all options have quotes for now, will come back to add strike interpolation for options that
                     # dont have a price
                     option_day_list.append (option_t)
                     list_price_features_t.append (option_t.quote)
                 vix_t = util.vix_calculation_30days (option_day_list, each_day)
-                self.list_of_synthetic_vix.append (vix_t)
+                self.map_of_synthetic_vix.update (each_day, vix_t)
                 list_price_features_t_bar = make_stationary (each_day, list_price_features_t)
-                self.price_features.dict.update (each_day, list_price_features_t_bar)
+                self.price_features.update (each_day, list_price_features_t_bar)
 
             else:
                 lower_date = self.findLowerTermFromGivenDate (each_day)
@@ -96,24 +77,24 @@ class ProcessingAndFeaturing:
                 higher_date_time_stamp = higher_date.Date.time_stamp
                 # assuming all options have quotes for now, will come back to add strike interpolation for options that
                 # dont have a price
-                list_options_near = Date.get_options_in_strike_range (selected_strike[lower_date_time_stamp],
+                list_options_near = Date.get_options_in_strike_range (lower_date.Date.selectStrike(),
                                                                       lower_date.Date.get_options_maturing_in_30 ())
-                list_options_far = Date.get_options_in_strike_range (selected_strike[higher_date_time_stamp],
+                list_options_far = Date.get_options_in_strike_range (higher_date.Date.selectStrike(),
                                                                      higher_date.Date.get_options_maturing_in_30 ())
 
                 vix_interpolated = util.vix_calculation_not_30days (list_options_near, lower_date, list_options_far,
                                                                     higher_date)
 
-                self.list_of_synthetic_vix.append (vix_interpolated)
+                self.map_of_synthetic_vix.update (each_day, vix_interpolated)
                 list_price_features_t = calculate_price_features_helper (lower_date, list_options_near,
                                                                          higher_date,
                                                                          list_options_far)
                 list_price_features_t_bar = make_stationary (each_day, list_price_features_t)
 
-                self.price_features.dict.update (each_day, list_price_features_t_bar)
+                self.price_features.update (each_day, list_price_features_t_bar)
 
 
-
+    #This method help find the nearest lower date that has options maturing in exactly 30 days
     def findLowerTermFromGivenDate (self, date: Date) -> Date:
         index = self.list_of_dates.index (date) - 1
         try:

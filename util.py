@@ -4,7 +4,6 @@ import math
 # get price of an option for using in VIX calculation using interpolation when maturity of desired option does not
 # coincides with forecast horizon (30days)
 from Date import Date
-
 forecast_horizon = processing_featuring.forecast_horizon
 
 
@@ -62,3 +61,13 @@ def vix_calculation_not_30days (list_near_options, date1: Date, list_far_options
 
     vix = 100 * math.sqrt (first_term + second_term)
     return vix
+
+
+def addToDatabase(connection, my_map):
+    for item in my_map.keys():
+        connection.updateVarianceTable(item.date, my_map.get(item))
+
+def addToDatabase2(connection, my_map):
+    for item in my_map.keys():
+        connection.updateMainTable(item.Option.id, my_map.get(item))
+
