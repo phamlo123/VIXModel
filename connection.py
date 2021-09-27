@@ -39,5 +39,11 @@ def updateMainTable (optionID: int, price_features: float):
 def getListOfOptionForDate (date: int):
     query = 'SELECT ID, date, expiry, days, k, cp, bid, ask FROM Main WHERE date = {mydate}'.format (mydate=date)
     cursor.execute (query)
-    df = pd.DataFrame(cursor.fetchall(), columns=['ID', 'date', 'expiry', 'days', 'k', 'cp', 'bid', 'ask'])
+    df = pd.DataFrame (cursor.fetchall (), columns=['ID', 'date', 'expiry', 'days', 'k', 'cp', 'bid', 'ask'])
     return df
+
+
+def updateDateTableRealizedVariance (date, variance):
+    statement = 'UPDATE Date SET futureRealizedVariance = {sth} WHERE date = {d}'.format (sth=variance, d=date)
+    cursor.execute (statement)
+    connection.commit ()

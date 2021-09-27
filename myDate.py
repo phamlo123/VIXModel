@@ -1,18 +1,14 @@
-from collections import Set
-from typing import List
-import myOption
 
 num_strike_selected = 40
 strike_Delta = 5
 forecast_horizon = 30
 
 
-def get_options_in_strike_range (strike_range: dict, list_options):
-    result = []
+def get_options_in_strike_range (strike_range: list, list_options):
+    result = list ()
     for option in list_options:
-        if option.strike >= strike_range[0] or option.strike <= strike_range[1]:
+        if option.strike >= strike_range[0] or option.strike <= strike_range[len (strike_range) - 1]:
             result.append (option)
-
     return result
 
 
@@ -54,6 +50,9 @@ class Date:
         selected_strikes = list ()
         for i in range (num_strike_selected):
             selected_strikes.append (self.nearest_strike_below_index + (i + 1) * strike_Delta)
-            selected_strikes.append (self.nearest_strike_below_index - (i - 1) * strike_Delta)
+
+        for i in range (num_strike_selected):
+            selected_strikes.insert (0, self.nearest_strike_below_index - (i + 1) * strike_Delta)
+
         self.selectedStrikes = selected_strikes
         return selected_strikes

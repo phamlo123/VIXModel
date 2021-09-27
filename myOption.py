@@ -12,3 +12,7 @@ class Option:
 
     def get_time_to_maturity (self):
         return self.exp_date - self.date
+
+
+
+

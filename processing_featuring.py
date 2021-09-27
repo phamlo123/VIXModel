@@ -47,6 +47,7 @@ class ProcessingAndFeaturing:
                 list_price_features_t = calculate_price_features_helper (lower_date, list_options_near,
                                                                          higher_date,
                                                                          list_options_far)
+
                 list_price_features_t_bar = make_stationary (each_day, list_price_features_t)
 
                 self.price_features.update (each_day, list_price_features_t_bar)

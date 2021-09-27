@@ -54,8 +54,8 @@ def vix_calculation_not_30days (list_near_options, date1: myDate, list_far_optio
 
     t1 = list_near_options[0].Option.get_time_to_maturity ()
     t2 = list_far_options[0].Option.get_time_to_maturity ()
-    time_ratio1 = (t2 - 30) / (t2 - t1)
-    time_ratio2 = (30 - t1) / (t2 - t1)
+    time_ratio1 = (t2 - forecastHorizon) / (t2 - t1)
+    time_ratio2 = (forecastHorizon - t1) / (t2 - t1)
     first_term = t1 * variance1 * time_ratio1
     second_term = t2 * variance2 * time_ratio2
 
@@ -63,7 +63,20 @@ def vix_calculation_not_30days (list_near_options, date1: myDate, list_far_optio
     return vix
 
 
-def addToDatabase (connection, my_map):
+def realizedVarianceCal (list_of_daily_returns):
+    sum = 0
+    for retu in list_of_daily_returns:
+        sum = sum + retu
+    length = len (list_of_daily_returns)
+    mean = sum / length
+    summation = 0
+    for retu in list_of_daily_returns:
+        summation = summation + ((retu - mean) ** 2)
+
+    return summation / length
+
+
+def addPriceFeaturesToDatabase (connection, my_map):
     try:
         for item in my_map.keys ():
             connection.updateVarianceTable (item.date, my_map.get (item))
@@ -71,9 +84,17 @@ def addToDatabase (connection, my_map):
         print ('Map of dates and corresponding lists of price features is empty')
 
 
-def addToDatabase2 (connection, my_map):
+def addCalculatedVixToDatabase (connection, my_map):
     try:
         for item in my_map.keys ():
             connection.updateMainTable (item.Option.id, my_map.get (item))
     except TypeError:
         print ('Map of date and corresponding synthetic vix is empty')
+
+
+def addRealizedVarianceToDatabase (connection, my_map):
+    try:
+        for item in my_map.keys ():
+           connection.updateDateTableRealizedVariance(item.date, my_map.get(item))
+    except TypeError:
+        print('Map of date and corresponding future realized variance is empty')
