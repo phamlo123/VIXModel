@@ -47,3 +47,11 @@ def updateDateTableRealizedVariance (date, variance):
     statement = 'UPDATE Date SET futureRealizedVariance = {sth} WHERE date = {d}'.format (sth=variance, d=date)
     cursor.execute (statement)
     connection.commit ()
+
+
+# Pull the spot prices of the underlying SPX for all dates
+def getListOfSpotPrices ():
+    statement = 'SELECT date, spot FROM Date'
+    cursor.execute(statement)
+    connection.commit()
+

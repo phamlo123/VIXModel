@@ -63,6 +63,19 @@ def vix_calculation_not_30days (list_near_options, date1: myDate, list_far_optio
     return vix
 
 
+def realizedVarianceCalculationByInterval (mapOfDateAndReturn):
+    dates = mapOfDateAndReturn.keys ()
+    mapOfDatesAndRealizedVariance = dict
+    for dateIndex in range (len (dates)):
+        list_of_daily_returns_next30 = list ()
+        for i in range (1, 30):
+            returnn = mapOfDateAndReturn.get (dates[dateIndex] + i)
+            list_of_daily_returns_next30.append (returnn)
+        realizedVariance = realizedVarianceCal (list_of_daily_returns_next30)
+        mapOfDatesAndRealizedVariance.update (dates[dateIndex], realizedVariance)
+    return mapOfDatesAndRealizedVariance
+
+
 def realizedVarianceCal (list_of_daily_returns):
     sum = 0
     for retu in list_of_daily_returns:
@@ -74,6 +87,20 @@ def realizedVarianceCal (list_of_daily_returns):
         summation = summation + ((retu - mean) ** 2)
 
     return summation / length
+
+
+def calculateListOfReturns (mapOfDatesAndSpots: dict):
+    mapOfDateAndReturn = dict
+    keys = mapOfDatesAndSpots.keys ()
+    for i in range (1, len (keys)):
+        returnRate = calculateReturn (mapOfDatesAndSpots.get (keys[i]), mapOfDatesAndSpots.get (keys[i - 1]))
+        mapOfDateAndReturn.update (keys[i + 1], returnRate)
+    return mapOfDateAndReturn
+
+
+def calculateReturn (price1, price2):
+    returnRate = price2 / price1 - 1
+    return returnRate
 
 
 def addPriceFeaturesToDatabase (connection, my_map):
@@ -95,6 +122,6 @@ def addCalculatedVixToDatabase (connection, my_map):
 def addRealizedVarianceToDatabase (connection, my_map):
     try:
         for item in my_map.keys ():
-           connection.updateDateTableRealizedVariance(item.date, my_map.get(item))
+            connection.updateDateTableRealizedVariance (item.date, my_map.get (item))
     except TypeError:
-        print('Map of date and corresponding future realized variance is empty')
+        print ('Map of date and corresponding future realized variance is empty')

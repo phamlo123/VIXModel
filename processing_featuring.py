@@ -107,3 +107,4 @@ def make_stationary (date: myDate, list_of_price_features):
 # the standard deviation
 def machine_learning_normalization ():
     return 0
+

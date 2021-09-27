@@ -1,8 +1,7 @@
 import pandas
-import connection as con
+import SQLconnection as con
 from myOption import Option
 from myDate import Date
-
 
 list_of_date_id = con.getListOfDates ()["date"].tolist ()
 list_of_forwards = con.getListOfDates ()["forward"].tolist ()
@@ -30,13 +29,24 @@ def constructOptions (date: int):
 
 
 def getListOfDates () -> list:
-    list_of_dates = list()
+    list_of_dates = list ()
     for i in range (len (list_of_date_id)):
         list_of_options = constructOptions (list_of_date_id[i])
-        this_date = Date(list_of_date_id[i], list_of_options, list_of_spot[i], list_of_forwards[i], list_of_rate[i],
-                         list_of_nearestStrike[i])
-        list_of_dates.append(this_date)
+        this_date = Date (list_of_date_id[i], list_of_options, list_of_spot[i], list_of_forwards[i], list_of_rate[i],
+                          list_of_nearestStrike[i])
+        list_of_dates.append (this_date)
     return list_of_dates
 
-list_of_dates = getListOfDates()
 
+def getMapOfDatesAndSpots ():
+    df = con.getListOfSpotPrices ()
+    datesAndSpotsMap = dict
+    list_of_dates = df['date'].tolist ()
+    list_of_spot = df['spot'].tolist ()
+    for i in range (len (list_of_dates)):
+        datesAndSpotsMap.update (list_of_dates[i], list_of_spot[i])
+    return datesAndSpotsMap
+
+
+list_of_dates = getListOfDates ()
+datesAndSpotsMap = getMapOfDatesAndSpots()
