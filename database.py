@@ -38,15 +38,6 @@ def getListOfDates () -> list:
     return list_of_dates
 
 
-def getMapOfDatesAndSpots ():
-    df = con.getListOfSpotPrices ()
-    datesAndSpotsMap = dict
-    list_of_dates = df['date'].tolist ()
-    list_of_spot = df['spot'].tolist ()
-    for i in range (len (list_of_dates)):
-        datesAndSpotsMap.update (list_of_dates[i], list_of_spot[i])
-    return datesAndSpotsMap
 
 
 list_of_dates = getListOfDates ()
-datesAndSpotsMap = getMapOfDatesAndSpots()

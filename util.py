@@ -89,12 +89,11 @@ def realizedVarianceCal (list_of_daily_returns):
     return summation / length
 
 
-def calculateListOfReturns (mapOfDatesAndSpots: dict):
+def calculateListOfReturns (list_of_date):
     mapOfDateAndReturn = dict
-    keys = mapOfDatesAndSpots.keys ()
-    for i in range (1, len (keys)):
-        returnRate = calculateReturn (mapOfDatesAndSpots.get (keys[i]), mapOfDatesAndSpots.get (keys[i - 1]))
-        mapOfDateAndReturn.update (keys[i + 1], returnRate)
+    for i in range (1, len (list_of_date)):
+        returnRate = calculateReturn (list_of_date[i-1].spot, list_of_date[i].spot)
+        mapOfDateAndReturn.update (list_of_date[i], returnRate)
     return mapOfDateAndReturn
 
 

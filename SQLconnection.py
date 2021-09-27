@@ -51,7 +51,8 @@ def updateDateTableRealizedVariance (date, variance):
 
 # Pull the spot prices of the underlying SPX for all dates
 def getListOfSpotPrices ():
-    statement = 'SELECT date, spot FROM Date'
+    statement = 'SELECT * FROM Date'
     cursor.execute(statement)
-    connection.commit()
+    df = pd.DataFrame(cursor.fetchall(), columns=['date', 'forward', 'spot', 'rate', 'nearestStrikeBelowSpot'])
+    return df
 
