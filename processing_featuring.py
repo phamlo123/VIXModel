@@ -7,10 +7,10 @@ strikeDelta = 5
 class ProcessingAndFeaturing:
 
     def __init__ (self, num_strikes_selected, list_of_dates):
-        self.price_features = dict
+        self.price_features = {}
         self.num_strikes_selected = num_strikes_selected
         self.list_of_dates = list_of_dates
-        self.map_of_synthetic_vix = dict
+        self.map_of_synthetic_vix = {}
 
     def feature_engineering (self):
         for each_day in self.list_of_dates:
@@ -24,9 +24,9 @@ class ProcessingAndFeaturing:
                     option_day_list.append (option_t)
                     list_price_features_t.append (option_t.quote)
                 vix_t = util.vix_calculation_30days (option_day_list, each_day)
-                self.map_of_synthetic_vix.update (each_day, vix_t)
+                self.map_of_synthetic_vix[each_day] = vix_t
                 list_price_features_t_bar = make_stationary (each_day, list_price_features_t)
-                self.price_features.update (each_day, list_price_features_t_bar)
+                self.price_features[each_day] = list_price_features_t_bar
 
             else:
                 lower_date = self.findLowerTermFromGivenDate (each_day)
@@ -43,14 +43,14 @@ class ProcessingAndFeaturing:
                 vix_interpolated = util.vix_calculation_not_30days (list_options_near, lower_date, list_options_far,
                                                                     higher_date)
 
-                self.map_of_synthetic_vix.update (each_day, vix_interpolated)
+                self.map_of_synthetic_vix[each_day] = vix_interpolated
                 list_price_features_t = calculate_price_features_helper (lower_date, list_options_near,
                                                                          higher_date,
                                                                          list_options_far)
 
                 list_price_features_t_bar = make_stationary (each_day, list_price_features_t)
 
-                self.price_features.update (each_day, list_price_features_t_bar)
+                self.price_features[each_day] = list_price_features_t_bar
 
     # This method help find the nearest lower date that has options maturing in exactly 30 days
     def findLowerTermFromGivenDate (self, date: myDate) -> myDate:

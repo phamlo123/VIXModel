@@ -3,7 +3,6 @@ import math
 # get price of an option for using in VIX calculation using interpolation when maturity of desired option does not
 # coincides with forecast horizon (30days)
 import myDate
-
 forecastHorizon = 30
 
 
@@ -65,14 +64,14 @@ def vix_calculation_not_30days (list_near_options, date1: myDate, list_far_optio
 
 def realizedVarianceCalculationByInterval (mapOfDateAndReturn):
     dates = mapOfDateAndReturn.keys ()
-    mapOfDatesAndRealizedVariance = dict
+    mapOfDatesAndRealizedVariance = {}
     for dateIndex in range (len (dates)):
         list_of_daily_returns_next30 = list ()
         for i in range (1, 30):
             returnn = mapOfDateAndReturn.get (dates[dateIndex] + i)
             list_of_daily_returns_next30.append (returnn)
         realizedVariance = realizedVarianceCal (list_of_daily_returns_next30)
-        mapOfDatesAndRealizedVariance.update (dates[dateIndex], realizedVariance)
+        mapOfDatesAndRealizedVariance[dates[dateIndex]] = realizedVariance
     return mapOfDatesAndRealizedVariance
 
 
@@ -90,10 +89,10 @@ def realizedVarianceCal (list_of_daily_returns):
 
 
 def calculateListOfReturns (list_of_date):
-    mapOfDateAndReturn = dict
+    mapOfDateAndReturn = {}
     for i in range (1, len (list_of_date)):
-        returnRate = calculateReturn (list_of_date[i-1].spot, list_of_date[i].spot)
-        mapOfDateAndReturn.update (list_of_date[i], returnRate)
+        returnRate = calculateReturn (list_of_date[i-1].index_spot_price, list_of_date[i].index_spot_price)
+        mapOfDateAndReturn[list_of_date[i]] =  returnRate
     return mapOfDateAndReturn
 
 
