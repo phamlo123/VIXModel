@@ -62,7 +62,7 @@ class Date:
         self.synthetic_vix = synthetic_vix
 
     # this method returns whether or not there is an option contract maturing 30 days from this day.
-    def has_options_maturing_in_30_days (self) -> bool:
+    def has_options_maturing_in_30_days (self):
         for option in self.list_of_options:
             if option.date_till_expiration == 30:
                 return True

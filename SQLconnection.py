@@ -47,7 +47,7 @@ def getListOfOptionForDate (date: int):
 
 
 def updateDateTableRealizedVariance (date, variance):
-    statement = 'UPDATE dateAndPriceFeature SET futureRealizedVariance = {sth} WHERE date_from_1996 = {d}'.format (sth=variance,
+    statement = 'UPDATE my_date SET realized_variance = {sth} WHERE date_from_1996 = {d}'.format (sth=variance,
                                                                                                        d=date)
     cursor.execute (statement)
     connection.commit ()

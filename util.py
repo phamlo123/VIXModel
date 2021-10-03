@@ -24,6 +24,7 @@ def get_price_using_interpolation (option1, option2):
 def vix_calculation_30days (list_of_option, date: myDate):
     variance = variance_calculation (list_of_option, date)
     vix = (variance ** (1 / 2)) * 100
+    print (vix)
     return vix
 
 
@@ -31,15 +32,14 @@ def vix_calculation_30days (list_of_option, date: myDate):
 def variance_calculation (list_of_option, date, term=30):
     first_term = 0
     k_delta = 5
-    e_term = date.interest_rate/100 * 30
-    e_term = math.exp(e_term)
+    e_term = date.interest_rate / 100 * 30
+    e_term = math.exp (e_term)
 
     for item in list_of_option:
         price = item.quote
         strike = item.strike
         portion = e_term * (2 * k_delta) / (strike ** 2) * price / term
-        first_term += portion
-
+        first_term = first_term + portion
     return first_term
 
 
@@ -59,41 +59,37 @@ def vix_calculation_not_30days (list_near_options, term1, list_far_options, term
 
 
 def realizedVarianceCalculationByInterval (mapOfDateAndReturn):
-    dates = mapOfDateAndReturn.keys ()
+    dates = list (mapOfDateAndReturn.keys ())
     mapOfDatesAndRealizedVariance = {}
-    for dateIndex in range (len (dates)):
-        list_of_daily_returns_next30 = list ()
+    for dateIndex in range (len (dates) - 30):
+        list_of_daily_returns_next30 = []
         for i in range (1, 30):
-            returnn = mapOfDateAndReturn.get (dates[dateIndex] + i)
-            list_of_daily_returns_next30.append (returnn)
+            d = dates[dateIndex + i]
+            list_of_daily_returns_next30.append (mapOfDateAndReturn[d])
         realizedVariance = realizedVarianceCal (list_of_daily_returns_next30)
+
         mapOfDatesAndRealizedVariance[dates[dateIndex]] = realizedVariance
     return mapOfDatesAndRealizedVariance
 
 
 def realizedVarianceCal (list_of_daily_returns):
-    sum = 0
+    variance = 0
     for retu in list_of_daily_returns:
-        sum = sum + retu
-    length = len (list_of_daily_returns)
-    mean = sum / length
-    summation = 0
-    for retu in list_of_daily_returns:
-        summation = summation + ((retu - mean) ** 2)
-
-    return summation / length
+        variance = variance + retu ** 2
+    return variance
 
 
 def calculateListOfReturns (list_of_date):
     mapOfDateAndReturn = {}
     for i in range (1, len (list_of_date)):
-        returnRate = calculateReturn (list_of_date[i - 1].index_spot_price, list_of_date[i].index_spot_price)
+        returnRate = calculateReturn (price1=list_of_date[i - 1].index_spot_price,
+                                      price2=list_of_date[i].index_spot_price)
         mapOfDateAndReturn[list_of_date[i]] = returnRate
     return mapOfDateAndReturn
 
 
 def calculateReturn (price1, price2):
-    returnRate = price2 / price1 - 1
+    returnRate = math.log (price2) - math.log (price1)
     return returnRate
 
 
@@ -111,5 +107,3 @@ def addCalculatedVixToDatabase (connection, my_map):
             connection.updateMainTable (item.id, my_map.get (item))
     except TypeError:
         print ('Map of date and corresponding synthetic vix is empty')
-
-
