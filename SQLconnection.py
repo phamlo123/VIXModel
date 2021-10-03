@@ -76,8 +76,20 @@ def update_price_features (inte, price):
 
 
 def getPriceFeatures():
-    statement = 'SELECT * FROM priceFeatures'
+    statement = 'SELECT * FROM dateAndPriceFeatures'
     cursor.execute(statement)
-    df = pd.DataFrame(cursor.fetchall(), columns=['date_from_1996', 'priceFeatures'])
+    df = pd.DataFrame(cursor.fetchall(), columns=['id', 'date_from_1996', 'priceFeatures', 'futureRealizedVariance'])
     return df
 
+
+def something(date):
+    statement = 'SELECT priceFeatures FROM dateAndPriceFeatures WHERE date_from_1996 = {d}'.format(d=date)
+    cursor.execute(statement)
+    df = pd.DataFrame(cursor.fetchall(), columns=['priceFeatures'])
+    return df
+
+def somethingelse(date):
+    statement = 'SELECT futureRealizedVariance FROM dateAndPriceFeatures WHERE date_from_1996 = {d} LIMIT 1'.format(d=date)
+    cursor.execute(statement)
+    df = pd.DataFrame(cursor.fetchall(), columns=['futureRealizedVariance'])
+    return df

@@ -70,7 +70,6 @@ def addRealizedVarianceToDatabase (connection, my_map):
         print ('Map of date and corresponding future realized variance is empty')
 
 
-
 # this is the final step in processing and featuring: fetching all options given a list of dates and perform calculation
 # on them (including calculating synthetic vix and price features used later for machine learning step)
 def updateVixAndStuffPriceFeatures ():
@@ -86,8 +85,6 @@ def updateVixAndStuffPriceFeatures ():
             SQLconnection.update_price_features (inte=item.date, price=feature)
 
 
-list_of_dates = getListOfDates()
-map_of_date_and_returns = util.calculateListOfReturns(list_of_date=list_of_dates)
-my_map = util.realizedVarianceCalculationByInterval(mapOfDateAndReturn=map_of_date_and_returns)
-
-addRealizedVarianceToDatabase(connection=SQLconnection, my_map=my_map)
+def getDataAndPriceFeaturesAndRealizedVarianceData ():
+    my_df = SQLconnection.getPriceFeatures ()
+    return my_df
