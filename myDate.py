@@ -1,13 +1,26 @@
-
 num_strike_selected = 40
 strike_Delta = 5
 forecast_horizon = 30
 
 
-def get_options_in_strike_range (strike_range: list, list_options):
+# get nearest strike price below spot among the list of options on this date
+def getNearestStrikeBelowSpot (index_spot_price, list_of_options):
+    list_of_strikes = []
+    for item in list_of_options:
+        if item.strike <= index_spot_price:
+            list_of_strikes.append (item.strike)
+    nearest = list_of_strikes[0]
+    for k in list_of_strikes:
+        if abs (k - index_spot_price) < abs (nearest - index_spot_price):
+            nearest = k
+    return nearest
+
+
+# This function returns a list of of options that have strikes within the given list of selected strikes and has the given maturity (number of days counted from this date)
+def get_options_in_strike_range (strike_range, list_options, maturity: int):
     result = list ()
     for option in list_options:
-        if option.strike >= strike_range[0] or option.strike <= strike_range[len (strike_range) - 1]:
+        if strike_range[0] <= option.strike <= strike_range[2] and option.date_till_expiration == maturity:
             result.append (option)
     return result
 
@@ -17,42 +30,42 @@ def get_options_in_strike_range (strike_range: list, list_options):
 
 class Date:
     def __init__ (self, date: int, list_of_options: list, index_spot_price: float,
-                  index_forward_price: float,
-                  interest_rate: float,
-                  nearest_strike_below_index: float):
+                  index_forward_price: float, nearestStrikeBelowSpot,
+                  interest_rate: float, realized_variance, synthetic_vix):
+        # date represented as the number of dates since 01/01/1996
         self.date = date
+        # the list of options that are posted on the option chains for this date
         self.list_of_options = list_of_options
-        self.nearest_strike_below_index = nearest_strike_below_index
+        # the lowest option strike below the index spot price eod
+        self.nearest_strike_below_index = nearestStrikeBelowSpot
+        # interest rate on this date
         self.interest_rate = interest_rate
+        # forward price of index
         self.index_forward_price = index_forward_price
+        # spot price of index
         self.index_spot_price = index_spot_price
-        self.selectedStrikes = list
+        # list of selected strikes for our analysis
+        self.selectedStrikes = []
+
+        self.realized_variance = realized_variance
+
+        self.synthetic_vix = synthetic_vix
 
     # this method returns whether or not there is an option contract maturing 30 days from this day.
     def has_options_maturing_in_30_days (self) -> bool:
         for option in self.list_of_options:
-            if option.exp_date == self.date + 30:
+            if option.date_till_expiration == 30:
                 return True
             else:
                 continue
         return False
 
-    # this method returns a list of Options that will mature exactly 30 days from this day, according to this day records.
-    def get_options_maturing_in_30 (self) -> list:
-        result = []
-        for option in self.list_of_options:
-            if option.exp_date == self.date + 30:
-                result.append (option)
+    # This method returns a list of strike that are selected based on the number of strikes included in the analysis,
+    # and the SPX spot price for that date
+    def selectStrike (self):
+        selected_strikes = []
+        upper_bound = self.nearest_strike_below_index + (num_strike_selected * strike_Delta)
 
-        return result
+        lower_bound = self.nearest_strike_below_index - (num_strike_selected * strike_Delta)
 
-    def selectStrike (self) -> list:
-        selected_strikes = list ()
-        for i in range (num_strike_selected):
-            selected_strikes.append (self.nearest_strike_below_index + (i + 1) * strike_Delta)
-
-        for i in range (num_strike_selected):
-            selected_strikes.insert (0, self.nearest_strike_below_index - (i + 1) * strike_Delta)
-
-        self.selectedStrikes = selected_strikes
-        return selected_strikes
+        return lower_bound, self.nearest_strike_below_index, upper_bound

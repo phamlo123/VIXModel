@@ -3,6 +3,7 @@ import math
 # get price of an option for using in VIX calculation using interpolation when maturity of desired option does not
 # coincides with forecast horizon (30days)
 import myDate
+
 forecastHorizon = 30
 
 
@@ -23,12 +24,11 @@ def get_price_using_interpolation (option1: myOption, option2: myOption):
 def vix_calculation_30days (list_of_option, date: myDate):
     variance = variance_calculation (list_of_option, date)
     vix = (variance ** (1 / 2)) * 100
-
     return vix
 
 
 # From the CBOE booklet
-def variance_calculation (list_of_option, date: myDate):
+def variance_calculation (list_of_option, date, term=30):
     first_term = 0
     k_delta = 5
     e_term = date.interest_rate * 30
@@ -37,28 +37,24 @@ def variance_calculation (list_of_option, date: myDate):
     for item in list_of_option:
         price = item.Option.quote
         strike = item.Option.strike
-        portion = e_term * (2 * k_delta) / (strike ** 2) * price / 30
+        portion = e_term * (2 * k_delta) / (strike ** 2) * price / term
         first_term += portion
 
-    last_term = ((date.index_forward_price / date.nearest_strike_below_index - 1) ** 2) / 30
-
-    variance = first_term - last_term
-    return variance
+    return first_term
 
 
 # Equation 2 and 3
-def vix_calculation_not_30days (list_near_options, date1: myDate, list_far_options, date2: myDate):
-    variance1 = variance_calculation (list_near_options, date1)
-    variance2 = variance_calculation (list_far_options, date2)
+def vix_calculation_not_30days (list_near_options, term1, list_far_options, term2, date):
+    variance1 = variance_calculation (list_of_option=list_near_options, date=date, term=term1)
+    variance2 = variance_calculation (list_of_option=list_far_options, date=date, term=term2)
 
-    t1 = list_near_options[0].Option.get_time_to_maturity ()
-    t2 = list_far_options[0].Option.get_time_to_maturity ()
-    time_ratio1 = (t2 - forecastHorizon) / (t2 - t1)
-    time_ratio2 = (forecastHorizon - t1) / (t2 - t1)
-    first_term = t1 * variance1 * time_ratio1
-    second_term = t2 * variance2 * time_ratio2
+    time_ratio1 = (term2 - forecastHorizon) / (term2 - term1)
+    time_ratio2 = (forecastHorizon - term1) / (term2 - term1)
 
-    vix = 100 * math.sqrt (first_term + second_term)
+    first = term1 * variance1 * time_ratio1
+    second = term2 * variance2 * time_ratio2
+
+    vix = 100 * math.sqrt (first + second)
     return vix
 
 
@@ -91,8 +87,8 @@ def realizedVarianceCal (list_of_daily_returns):
 def calculateListOfReturns (list_of_date):
     mapOfDateAndReturn = {}
     for i in range (1, len (list_of_date)):
-        returnRate = calculateReturn (list_of_date[i-1].index_spot_price, list_of_date[i].index_spot_price)
-        mapOfDateAndReturn[list_of_date[i]] =  returnRate
+        returnRate = calculateReturn (list_of_date[i - 1].index_spot_price, list_of_date[i].index_spot_price)
+        mapOfDateAndReturn[list_of_date[i]] = returnRate
     return mapOfDateAndReturn
 
 
