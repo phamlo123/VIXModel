@@ -17,7 +17,7 @@ def createPredictedVixTable ():
 
 
 def getListOfDates () -> pd.DataFrame:
-    query = 'SELECT date_from_1996, spot, rate, nearestStrikeBelowSpot, realized_variance, vix FROM my_date LIMIT 100'
+    query = 'SELECT date_from_1996, spot, rate, nearestStrikeBelowSpot, realized_variance, vix FROM my_date'
     cursor.execute (query)
     df = pd.DataFrame (cursor.fetchall (),
                        columns=['date_from_1996', 'spot', 'rate', 'nearestStrikeBelowSpot', 'realized_variance',
@@ -26,8 +26,8 @@ def getListOfDates () -> pd.DataFrame:
 
 
 def update_my_date_table_vix (date: int, synthetic_vix: float):
-    statement = 'UPDATE my_date SET synthetic_vix = {vix} WHERE date_from_1996 = {date}'.format (date=date,
-                                                                                                 vix=synthetic_vix)
+    statement = 'UPDATE my_date SET vix = {vix} WHERE date_from_1996 = {date}'.format (date=date,
+                                                                                       vix=synthetic_vix)
     cursor.execute (statement)
     connection.commit ()
 
@@ -47,7 +47,7 @@ def getListOfOptionForDate (date: int):
 
 
 def updateDateTableRealizedVariance (date, variance):
-    statement = 'UPDATE my_date SET futureRealizedVariance = {sth} WHERE date_from_1996 = {d}'.format (sth=variance,
+    statement = 'UPDATE dateAndPriceFeature SET futureRealizedVariance = {sth} WHERE date_from_1996 = {d}'.format (sth=variance,
                                                                                                        d=date)
     cursor.execute (statement)
     connection.commit ()
@@ -68,7 +68,16 @@ def update_nearest_strike_below_index_for_date_table (date, strike):
     connection.commit ()
 
 
-def update_price_features (date, price):
-    statement = 'UPDATE dateAndPriceFeatures SET date_from_1996 = {d}, priceFeatures = {f}'.format (d=date, f=price)
+def update_price_features (inte, price):
+    statement = 'INSERT INTO dateAndPriceFeatures (date_from_1996, priceFeatures) VALUES ({t},{f})'.format (t=inte,
+                                                                                                    f=price)
     cursor.execute (statement)
     connection.commit ()
+
+
+def getPriceFeatures():
+    statement = 'SELECT * FROM priceFeatures'
+    cursor.execute(statement)
+    df = pd.DataFrame(cursor.fetchall(), columns=['date_from_1996', 'priceFeatures'])
+    return df
+

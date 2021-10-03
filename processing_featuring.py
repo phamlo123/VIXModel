@@ -13,6 +13,7 @@ class ProcessingAndFeaturing:
         self.list_of_dates = list_of_dates
         self.map_of_synthetic_vix = {}
 
+    # algorithm provided on the paper (the second one)
     def feature_engineering (self):
         for each_day in self.list_of_dates:
             selected_strike = each_day.selectStrike ()
@@ -37,6 +38,9 @@ class ProcessingAndFeaturing:
                 lower_term = self.findLowerTermOnGivenDate (each_day)
                 higher_term = self.findHigherTermOnGivenDate (each_day)
 
+                if higher_term == 5000 or lower_term == 0:
+                    continue
+
                 # assuming all options have quotes for now, will come back to add strike interpolation for options that
                 # dont have a price
                 list_options_near = myDate.get_options_in_strike_range (selected_strike,
@@ -60,32 +64,30 @@ class ProcessingAndFeaturing:
                 self.price_features[each_day] = list_price_features_t_bar
 
     # This method help find the nearest lower maturity that some options have on this date
-    def findLowerTermOnGivenDate (self, date: myDate) -> myDate:
+    def findLowerTermOnGivenDate (self, date):
         n = 29
         while True:
             if n == 0:
                 print ("no options posted on this date has maturity less than 30 days (impossible)")
-                return
+                return 0
             for option in date.list_of_options:
                 if option.date_till_expiration == n:
                     return n
-            else:
-                n = n - 1
+            n = n - 1
 
     # This method help find the higher date that has options maturing in exactly 30 days
-    def findHigherTermOnGivenDate (self, date: myDate) -> myDate:
+    def findHigherTermOnGivenDate (self, date):
         n = 31
         while True:
-            if n == 90:
+            if n == 5000:
                 print ("no options posted on this date has maturity more than 30 days (impossible)")
-                return
-            if n == 0:
-                print ("no lower options posted on this date has maturity less than 30 days (impossible)")
+                break
+
             for option in date.list_of_options:
                 if option.date_till_expiration == n:
                     return n
-                else:
-                    n = n + 1
+            n = n + 1
+        return 5000
 
 
 # Equation 5
@@ -96,9 +98,10 @@ def calculate_price_features_helper (t_lower, list_options_near, t_higher, list_
         list_near.append (option1.quote)
     for option2 in list_options_far:
         list_far.append (option2.quote)
+    l = min (len (list_near), len (list_far))
 
     list_interpolated_feature_price = []
-    for i in range (len (list_near)):
+    for i in range (l):
         term_1 = (t_higher - 30) / (t_higher - t_lower) * list_near[i]
         term_2 = (30 - t_lower) / (t_higher - t_lower) * list_far[i]
 
@@ -115,7 +118,7 @@ def make_stationary (date: myDate, list_of_price_features):
     for item in list_of_price_features:
         price_feature_bar = item / (K ** 2)
         list_of_price_features_bar.append (price_feature_bar)
-    return date, list_of_price_features_bar
+    return list_of_price_features_bar
 
 
 # Before feeding into the model, all features are normalized by subtracting from the sample mean and divide them by

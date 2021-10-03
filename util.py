@@ -7,11 +7,11 @@ import myDate
 forecastHorizon = 30
 
 
-def get_price_using_interpolation (option1: myOption, option2: myOption):
-    option1_price = option1.Option.quote
-    option2_price = option2.Option.quote
-    option1_time_to_mat = option1.Option.get_time_to_maturity ()
-    option2_time_to_mat = option2.Option.get_time_to_maturity ()
+def get_price_using_interpolation (option1, option2):
+    option1_price = option1.quote
+    option2_price = option2.quote
+    option1_time_to_mat = option1.get_time_to_maturity ()
+    option2_time_to_mat = option2.get_time_to_maturity ()
     first_term = option1_price * (option2_time_to_mat - forecastHorizon) / (option2_time_to_mat - option1_time_to_mat)
     second_term = option2_price * (forecastHorizon - option1_time_to_mat) / (option2_time_to_mat - option1_time_to_mat)
 
@@ -31,12 +31,12 @@ def vix_calculation_30days (list_of_option, date: myDate):
 def variance_calculation (list_of_option, date, term=30):
     first_term = 0
     k_delta = 5
-    e_term = date.interest_rate * 30
-    e_term = e_term.exp ()
+    e_term = date.interest_rate/100 * 30
+    e_term = math.exp(e_term)
 
     for item in list_of_option:
-        price = item.Option.quote
-        strike = item.Option.strike
+        price = item.quote
+        strike = item.strike
         portion = e_term * (2 * k_delta) / (strike ** 2) * price / term
         first_term += portion
 
@@ -108,14 +108,8 @@ def addPriceFeaturesToDatabase (connection, my_map):
 def addCalculatedVixToDatabase (connection, my_map):
     try:
         for item in my_map.keys ():
-            connection.updateMainTable (item.Option.id, my_map.get (item))
+            connection.updateMainTable (item.id, my_map.get (item))
     except TypeError:
         print ('Map of date and corresponding synthetic vix is empty')
 
 
-def addRealizedVarianceToDatabase (connection, my_map):
-    try:
-        for item in my_map.keys ():
-            connection.updateDateTableRealizedVariance (item.date, my_map.get (item))
-    except TypeError:
-        print ('Map of date and corresponding future realized variance is empty')

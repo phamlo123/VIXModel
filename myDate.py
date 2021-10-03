@@ -18,10 +18,20 @@ def getNearestStrikeBelowSpot (index_spot_price, list_of_options):
 
 # This function returns a list of of options that have strikes within the given list of selected strikes and has the given maturity (number of days counted from this date)
 def get_options_in_strike_range (strike_range, list_options, maturity: int):
-    result = list ()
+    put = []
+    call = []
     for option in list_options:
-        if strike_range[0] <= option.strike <= strike_range[2] and option.date_till_expiration == maturity:
-            result.append (option)
+        if strike_range[0] <= option.strike < strike_range[1] and option.date_till_expiration == maturity and option.cp == 'P':
+            put.append (option)
+        if strike_range[1] < option.strike <= strike_range[2] and option.date_till_expiration == maturity and option.cp == 'C':
+            call.append (option)
+
+    result = []
+    for item in list_options:
+        if item.strike == strike_range[1] and item.date_till_expiration == maturity:
+            result.append (item)
+
+    result = put + call + result
     return result
 
 
@@ -63,9 +73,7 @@ class Date:
     # This method returns a list of strike that are selected based on the number of strikes included in the analysis,
     # and the SPX spot price for that date
     def selectStrike (self):
-        selected_strikes = []
         upper_bound = self.nearest_strike_below_index + (num_strike_selected * strike_Delta)
 
         lower_bound = self.nearest_strike_below_index - (num_strike_selected * strike_Delta)
-
         return lower_bound, self.nearest_strike_below_index, upper_bound
