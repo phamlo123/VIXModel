@@ -14,8 +14,12 @@ Details on how options are selected for each day is presented in the paper.
 
 In this project, I only implement Feed-Forward neural network machine learning model using Scikit-learn, as it yields the best OOS R^2. This component is still in progress
 
-Looking ahead, this program will fetch current option data daily from Tradier API. The data will be then used as parameters in the model to provide a better prediction of 
-realized variance than current VIX. 
+Looking ahead, this program will include features to fetch current option data daily from Tradier API. The data will be then used as parameters in the model to provide a better prediction of realized variance than current VIX. This will then be published on a webpage
+
+
+
+
+
 
 Database is stored locally on MySql server. 
 
