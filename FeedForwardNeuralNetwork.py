@@ -1,8 +1,9 @@
-from sklearn.neural_network import MLPRegressor
+import sklearn
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
 import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
+from sklearn.neural_network import MLPRegressor
 
 import SQLconnection
 import database
@@ -26,13 +27,18 @@ def formatting ():
     return mapOfdatesAndOthers
 
 
+def preprocess():
+    sklearn.preprocessing.StandardScaler()
+
 def additionalFormat ():
     my_map = formatting ()
     keys = my_map.keys ()
     X = []
     y = []
     for item in keys:
-        X.append (np.array (my_map[item][0]))
+        print(item)
+        print(len(my_map[item][0]))
+        X.append (my_map[item][0])
         y.append (my_map[item][1])
     y = np.array (y)
     X = np.array (X)
@@ -46,6 +52,6 @@ def splittingDataAndTrain ():
         y_train, y_test = y[train_index], y[test_index]
         regression = MLPRegressor (hidden_layer_sizes=80).fit (X_train, y_train)
         regression.predict (X_test)
-        regression.score (X_test, y_test)
+        print(regression.score (X_test, y_test))
 
 splittingDataAndTrain()

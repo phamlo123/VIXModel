@@ -1,4 +1,4 @@
-num_strike_selected = 40
+num_strike_selected = 20
 strike_Delta = 5
 forecast_horizon = 30
 
